@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Board</title>
+<style>
+@font-face{font-family:'Big Shoulders Display';font-weight:600;font-display:swap;src:url(fonts/big-shoulders-display-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Big Shoulders Display';font-weight:800;font-display:swap;src:url(fonts/big-shoulders-display-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-weight:400;font-display:swap;src:url(fonts/barlow-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-weight:600;font-display:swap;src:url(fonts/barlow-latin-600-normal.woff2) format('woff2')}
+
+:root{
+  --ink:#070d1a;
+  --panel:#0f1a31;
+  --panel2:#15244a;
+  --line:#243457;
+  --text:#e8eefc;
+  --dim:#93a4c9;
+  --amber:#ffb300;
+  --ice:#54d8ff;
+  --red:#ff5252;
+  --green:#3ddc97;
+  --disp:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --body:'Barlow','Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--ink)}
+body{font-family:var(--body);color:var(--text);font-size:26px;-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;
+  background:radial-gradient(1100px 520px at 10% 0%,#13224a 0%,rgba(7,13,26,0) 62%),var(--ink)}
+body.night #stage{filter:brightness(.45)}
+.dim{color:var(--dim)}
+
+/* top band */
+#top{position:absolute;left:40px;top:28px;width:1840px;height:190px;display:flex;align-items:center}
+#clock{width:480px}
+#clock .time{font-family:var(--disp);font-weight:800;font-size:168px;line-height:.86;color:var(--amber);letter-spacing:-.01em}
+#clock .ap{font-size:54px;margin-left:10px;color:var(--dim);font-weight:600}
+#date{font-size:36px;font-weight:500;margin-top:10px}
+#wnow{width:620px;height:150px;border-left:2px solid var(--line);padding-left:28px;display:flex;align-items:center}
+#wnow svg{width:112px;height:112px;flex:none}
+#wnow .temp{font-family:var(--disp);font-weight:800;font-size:124px;line-height:.9;margin:0 24px 0 12px}
+#wnow .txt{font-size:26px;line-height:32px;color:var(--dim);white-space:nowrap}
+#wnow .txt b{display:block;font-size:34px;line-height:40px;color:var(--text);font-weight:600}
+#w5{width:740px;height:150px;border-left:2px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr)}
+#w5 .d{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#w5 .dn{font-size:26px;font-weight:600;color:var(--dim)}
+#w5 svg{width:56px;height:56px;margin:4px 0}
+#w5 .hl{font-size:30px;font-weight:600}
+#w5 .hl i{font-style:normal;color:var(--dim);font-weight:500;margin-left:10px;font-size:26px}
+#badge{position:absolute;right:40px;top:4px;font-size:22px;color:var(--amber);font-weight:600}
+
+/* panels */
+#main{position:absolute;left:40px;top:240px;width:1840px;height:720px}
+.panel{position:absolute;background:var(--panel);border:2px solid var(--line);overflow:hidden}
+#p-planner{left:0;top:0;width:620px;height:720px}
+#p-sports{left:640px;top:0;width:600px;height:720px}
+#p-bills{left:1260px;top:0;width:580px;height:346px}
+#p-groc{left:1260px;top:366px;width:580px;height:354px}
+.panel.zoom{left:0!important;top:0!important;width:1840px!important;height:720px!important;z-index:30;background:#0c1630}
+body.nav .panel.focus{outline:4px solid var(--amber);outline-offset:-4px}
+.tab{position:absolute;left:0;top:0;height:56px;display:flex;align-items:center;padding:0 46px 0 22px;
+  background:var(--amber);color:#1b1300;font:800 38px/1 var(--disp);letter-spacing:.01em;
+  clip-path:polygon(0 0,100% 0,calc(100% - 26px) 100%,0 100%)}
+#p-sports .tab{background:var(--ice);color:#04202b}
+.meta{position:absolute;right:22px;top:14px;font-size:24px;color:var(--dim);font-weight:500}
+.body{position:absolute;left:0;right:0;top:66px;bottom:0;padding:6px 22px 12px;overflow:hidden}
+
+/* planner */
+.pl{display:flex;flex-direction:column;height:100%}
+.day{flex:1;display:flex;align-items:center;border-top:1px solid var(--line);padding-left:14px;min-height:0;overflow:hidden}
+.day:first-child{border-top:0}
+.day.today{background:rgba(255,179,0,.11);box-shadow:inset 6px 0 0 var(--amber)}
+.day .dl{width:104px;flex:none}
+.day .dl b{display:block;font:800 34px/1 var(--disp)}
+.day .dl span{font-size:22px;color:var(--dim)}
+.day .evs{display:flex;flex-wrap:wrap;gap:2px 22px;align-items:center;max-height:78px;overflow:hidden;line-height:36px}
+.ev{font-size:26px;font-weight:500;padding-left:10px;border-left:3px solid var(--ice);white-space:nowrap;max-width:440px;overflow:hidden;text-overflow:ellipsis}
+.ev b{color:var(--ice);font-weight:600;margin-right:8px}
+.day .open{font-size:24px;color:#5f7099}
+.zoom .day .evs{max-height:none}
+.zoom .ev{max-width:900px;font-size:30px}
+
+/* sports */
+.grp{font:800 28px/1 var(--disp);color:var(--ice);border-bottom:2px solid var(--line);padding:10px 0 6px;margin-top:2px}
+.game{display:grid;grid-template-columns:112px 64px 64px 112px 1fr;align-items:center;height:68px;border-bottom:1px solid var(--line);padding-left:8px}
+.game.fav{background:rgba(255,179,0,.12);box-shadow:inset 6px 0 0 var(--amber)}
+.tm .a{font:800 44px/.95 var(--disp)}
+.tm .r{font-size:22px;color:var(--dim);line-height:1}
+.sc{font:800 48px/1 var(--disp);text-align:center}
+.sc.lo{color:#6e80a8}
+.at{grid-column:span 2;text-align:center;font-size:24px;color:var(--dim)}
+.st{text-align:right;font-size:24px;font-weight:600;line-height:1.1;padding-right:2px}
+.st.live{color:var(--red)}
+.st.live:before{content:"";display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--red);margin-right:8px;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.nogame{font-size:24px;color:var(--dim);padding:14px 8px;border-bottom:1px solid var(--line)}
+.zoom .sp2{column-count:2;column-gap:40px}
+.zoom .grp{column-span:all}
+
+/* bills */
+.bill{display:flex;align-items:baseline;height:42px;line-height:42px}
+.bill .n{font-size:28px;font-weight:600;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bill .ld{flex:1;border-bottom:2px dotted var(--line);margin:0 10px;position:relative;top:-7px}
+.bill .du{font-size:24px;color:var(--dim);min-width:86px;text-align:right;margin-right:16px}
+.bill .am{font-size:28px;font-weight:600;min-width:96px;text-align:right;font-variant-numeric:tabular-nums}
+.bill.late .n,.bill.late .du{color:var(--red)}
+.bill.soon .du{color:var(--amber)}
+.bill.paid{opacity:.45}
+.bill.paid .n{text-decoration:line-through}
+.zoom .bills2{column-count:2;column-gap:60px}
+.zoom .bill .n{max-width:340px}
+
+/* groceries */
+.gcols{display:flex;gap:28px}
+.gcol{flex:1;min-width:0}
+.gh{font-size:22px;color:var(--dim);font-weight:600;line-height:32px;border-bottom:1px solid var(--line);margin-bottom:2px}
+.gi{font-size:26px;line-height:32px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zoom .gi{font-size:32px;line-height:44px}
+.zoom .gh{font-size:26px;line-height:44px}
+.zoom .bill{height:62px;line-height:62px}
+.zoom .bill .n,.zoom .bill .am{font-size:36px}
+.zoom .bill .du{font-size:28px}
+.zoom .bill .ld{top:-10px}
+.zoom .game{height:92px}
+.zoom .tm .a{font-size:58px}
+.zoom .sc{font-size:62px}
+.zoom .st,.zoom .at{font-size:28px}
+.gi:before{content:"";display:inline-block;width:15px;height:15px;border:3px solid var(--ice);margin-right:12px;position:relative;top:1px}
+.gi i{font-style:normal;color:var(--dim);margin-left:8px;font-size:24px}
+.empty{font-size:26px;color:var(--dim);padding:14px 4px;line-height:1.35}
+
+/* bottom bar */
+#bottom{position:absolute;left:40px;top:984px;width:1840px;height:66px;display:flex;gap:16px}
+#pills{display:flex;gap:16px}
+.pill{height:66px;background:var(--panel);border:2px solid var(--line);display:flex;align-items:center;padding:0 22px;gap:12px;white-space:nowrap}
+.pill .nm{font:800 42px/1 var(--disp);color:var(--amber)}
+.pill .nm small{font:600 24px var(--body);color:var(--dim);margin-left:6px}
+.pill .lb{font-size:26px;font-weight:500}
+#ticker{flex:1;height:66px;background:var(--panel);border:2px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center}
+#ticker .at2{position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;padding:0 40px 0 20px;background:var(--red);color:#2a0000;font:800 32px/1 var(--disp);clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%);z-index:2}
+#ticker .mqbox{position:absolute;left:230px;right:0;top:0;bottom:0;overflow:hidden}
+#ticker .mq{position:absolute;top:0;line-height:62px;white-space:nowrap;font-size:28px;font-weight:500;left:0;animation:mq 40s linear infinite}
+@keyframes mq{from{transform:translateX(1000px)}to{transform:translateX(-100%)}}
+#upd{margin-left:auto;display:flex;align-items:center;padding:0 20px;font-size:24px;color:var(--dim);white-space:nowrap}
+
+/* game night */
+#gn{position:absolute;left:0;top:0;width:1840px;height:720px;z-index:40;display:none;border:2px solid var(--line);
+  background:radial-gradient(900px 500px at 50% 40%,#17306b 0%,#0a1330 70%)}
+#gn.on{display:block}
+#gn .lg{position:absolute;left:0;top:0;width:100%;text-align:center;top:26px;font:800 54px/1 var(--disp);color:var(--ice)}
+#gn .row{position:absolute;left:0;top:140px;width:100%;display:flex;justify-content:center;align-items:center}
+#gn .t{width:520px;text-align:center}
+#gn .t .a{font:800 230px/.9 var(--disp)}
+#gn .t .r{font-size:34px;color:var(--dim)}
+#gn .s{font:800 300px/.9 var(--disp);width:300px;text-align:center}
+#gn .s.lo{color:#6e80a8}
+#gn .dash{font:800 120px var(--disp);color:var(--dim);width:80px;text-align:center}
+#gn .stt{position:absolute;left:0;top:520px;width:100%;text-align:center;font:800 92px/1 var(--disp);color:var(--amber)}
+#gn .stt.live{color:var(--red)}
+#gn .oth{position:absolute;left:40px;right:40px;bottom:22px;font-size:28px;color:var(--dim);text-align:center}
+#gn .hint{position:absolute;right:26px;top:22px;font-size:22px;color:var(--dim)}
+#gn.fav .lg{color:var(--amber)}
+@media (prefers-reduced-motion:reduce){.st.live:before,#ticker .mq{animation:none}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="badge"></div>
+  <header id="top">
+    <section id="clock"><div class="time"><span id="th"></span><span class="ap" id="tap"></span></div><div id="date"></div></section>
+    <section id="wnow"></section>
+    <section id="w5"></section>
+  </header>
+  <main id="main">
+    <section class="panel" id="p-planner" data-key="planner"><h2 class="tab">This week</h2><div class="meta" id="m-planner"></div><div class="body" id="b-planner"></div></section>
+    <section class="panel" id="p-sports" data-key="sports"><h2 class="tab">Scores</h2><div class="meta" id="m-sports"></div><div class="body" id="b-sports"></div></section>
+    <section class="panel" id="p-bills" data-key="bills"><h2 class="tab">Bills</h2><div class="meta" id="m-bills"></div><div class="body" id="b-bills"></div></section>
+    <section class="panel" id="p-groc" data-key="groc"><h2 class="tab">Groceries</h2><div class="meta" id="m-groc"></div><div class="body" id="b-groc"></div></section>
+    <div id="gn"></div>
+  </main>
+  <footer id="bottom"><div id="pills"></div><div id="ticker"></div><div id="upd"></div></footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------------- config ---------------- */
+var Q = new URLSearchParams(location.search);
+var DEMO = Q.get('demo') === '1';
+var CONFIG = {
+  sheetId: Q.get('sheet') || '1q6Nx-euE5-B5Lj-ORfbGpyg-Kcs2AUzNZ9qXUS5zG2w',   // the "Home Board" Google Sheet
+  tabs: {                                           // gid is the safest way to pick a tab
+    groceries: {gid: 0}, bills: {gid: 1}, planner: {gid: 2}, countdowns: {gid: 3}, settings: {gid: 4}
+  },
+  place: {name: 'Pocatello', lat: 42.8713, lon: -112.4455, tz: 'America/Denver'},
+  fav: {nhl: ['VGK'], nfl: ['MIN']},
+  nightFrom: 23, nightTo: 6
+};
+if (Q.get('fav')) {                                  // test override, e.g. ?fav=VGK,MIN
+  var fv = Q.get('fav').toUpperCase().split(',');
+  CONFIG.fav = {nhl: fv, nfl: fv};
+}
+
+var S = {
+  sheet: {groceries: [], bills: [], planner: [], countdowns: [], settings: {}},
+  weather: null, alerts: [], games: {nhl: [], nfl: []}, rec: {nhl: {}}, next: {nhl: null},
+  zoom: null, focus: 0, lastSync: null, sheetOk: null, wxErr: false,
+  seenLive: {}, finalAt: {}, gnDismissed: {}, gnForce: false, gnShown: null
+};
+var ORDER = ['planner', 'sports', 'bills', 'groc'];
+function $(id){ return document.getElementById(id); }
+
+/* ---------------- helpers ---------------- */
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function sod(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function addD(d, n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+function diffDays(a, b){ return Math.round((sod(a) - sod(b)) / 86400000); }
+var WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var WDF = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var MO = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fmtTime(d){ return d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}); }
+function fmtMins(m){ var h = Math.floor(m / 60), mi = m % 60, ap = h >= 12 ? 'PM' : 'AM'; h = h % 12; if (h === 0) h = 12; return h + (mi ? ':' + (mi < 10 ? '0' : '') + mi : '') + ' ' + ap; }
+function fmtGameTime(d){ var now = new Date(); return (diffDays(d, now) === 0 ? '' : WD[d.getDay()] + ' ') + fmtTime(d); }
+function ord(n){ return n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : n + 'th'; }
+function money(n){ return '$' + (n % 1 ? n.toFixed(2) : String(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+/* ---------------- Google Sheet via gviz (JSONP) ---------------- */
+var seq = 0;
+function loadTab(spec){
+  return new Promise(function(resolve, reject){
+    if (!CONFIG.sheetId) { reject(new Error('no sheet')); return; }
+    var name = '__gv' + (++seq) + '_' + Date.now(), s = document.createElement('script'), done = false, t;
+    function fin(){ done = true; clearTimeout(t); try { delete window[name]; } catch (e) { window[name] = undefined; } if (s.parentNode) s.parentNode.removeChild(s); }
+    window[name] = function(resp){ if (done) return; fin(); if (resp && resp.status === 'ok' && resp.table) resolve(resp.table.rows || []); else reject(new Error('bad response')); };
+    s.onerror = function(){ if (done) return; fin(); reject(new Error('load error')); };
+    t = setTimeout(function(){ if (done) return; fin(); reject(new Error('timeout')); }, 15000);
+    var q = spec.gid != null ? 'gid=' + spec.gid : 'sheet=' + encodeURIComponent(spec.name);
+    s.src = 'https://docs.google.com/spreadsheets/d/' + CONFIG.sheetId + '/gviz/tq?tqx=out:json;responseHandler:' + name + '&headers=1&' + q;
+    document.head.appendChild(s);
+  });
+}
+function cv(r, i){ var c = r.c && r.c[i]; return c && c.v != null ? c.v : ''; }
+function tx(r, i){ var c = r.c && r.c[i]; if (!c || c.v == null) return ''; return String(c.f != null ? c.f : c.v).trim(); }
+function gDate(v){
+  if (typeof v !== 'string') return null;
+  var m = /^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?/.exec(v);
+  return m ? {y: +m[1], mo: +m[2], d: +m[3], h: m[4] ? +m[4] : null, mi: m[5] ? +m[5] : null} : null;
+}
+function truthy(v){ if (v === true) return true; if (typeof v === 'number') return v !== 0; return typeof v === 'string' && v.trim() !== '' && !/^(no|false|0|n)$/i.test(v.trim()); }
+function parseTimeText(s){
+  var m = /^(\d{1,2})(?::(\d{2}))?\s*([ap])m?$/i.exec(s.trim());
+  if (m) { var h = +m[1] % 12; if (/p/i.test(m[3])) h += 12; return h * 60 + (m[2] ? +m[2] : 0); }
+  m = /^(\d{1,2}):(\d{2})$/.exec(s.trim());
+  return m ? +m[1] * 60 + +m[2] : null;
+}
+function numOf(v){ if (typeof v === 'number') return v; var m = /-?[\d,]*\.?\d+/.exec(String(v)); return m ? parseFloat(m[0].replace(/,/g, '')) : 0; }
+
+function parseGroceries(rows){
+  var out = [];
+  rows.forEach(function(r){ var item = tx(r, 0); if (!item || /^item$/i.test(item)) return; out.push({item: item, section: tx(r, 1) || 'Other', qty: tx(r, 2), done: truthy(cv(r, 3))}); });
+  return out;
+}
+function parseBills(rows){
+  var out = [];
+  rows.forEach(function(r){
+    var name = tx(r, 0); if (!name || /^bill$/i.test(name)) return;
+    var dv = cv(r, 2), dd = gDate(dv), b = {name: name, amount: numOf(cv(r, 1)), paid: truthy(cv(r, 3)), due: null, day: null};
+    if (dd) b.due = new Date(dd.y, dd.mo, dd.d);
+    else { var n = numOf(dv); if (n >= 1 && n <= 31) b.day = Math.round(n); else return; }
+    out.push(b);
+  });
+  return out;
+}
+function parsePlanner(rows){
+  var out = [];
+  rows.forEach(function(r){
+    var dd = gDate(cv(r, 0)); if (!dd) return;
+    var title = tx(r, 2); if (!title) return;
+    var tv = cv(r, 1), td = gDate(tv), mins = null;
+    if (td && td.h != null) mins = td.h * 60 + td.mi; else if (typeof tv === 'string' && tv) mins = parseTimeText(tv);
+    out.push({date: new Date(dd.y, dd.mo, dd.d), mins: mins, title: title});
+  });
+  return out;
+}
+function parseCountdowns(rows){
+  var out = [];
+  rows.forEach(function(r){
+    var label = tx(r, 0), dd = gDate(cv(r, 1)); if (!label || !dd) return;
+    out.push({label: label, date: new Date(dd.y, dd.mo, dd.d), kind: /streak/i.test(tx(r, 2)) ? 'streak' : 'countdown', goal: numOf(cv(r, 3)) || 0});
+  });
+  return out;
+}
+function parseSettings(rows){
+  var o = {};
+  rows.forEach(function(r){ var k = tx(r, 0).toLowerCase(), v = tx(r, 1); if (k && v && k !== 'key') o[k] = v; });
+  return o;
+}
+function applySettings(){
+  var st = S.sheet.settings;
+  if (st.nhl_teams) CONFIG.fav.nhl = st.nhl_teams.toUpperCase().split(/[,\s]+/).filter(Boolean);
+  if (st.nfl_teams) CONFIG.fav.nfl = st.nfl_teams.toUpperCase().split(/[,\s]+/).filter(Boolean);
+}
+function demoSheet(){
+  var t = sod(new Date());
+  function d(n){ return addD(t, n); }
+  S.sheet.groceries = [
+    ['Milk','Dairy','1 gal'],['Eggs','Dairy','2 dz'],['Cream cheese','Dairy',''],['Bagels','Bakery','12'],['Sourdough','Bakery',''],
+    ['Bananas','Produce',''],['Spinach','Produce',''],['Avocados','Produce','4'],['Chicken thighs','Meat','3 lb'],['Ground beef','Meat','2 lb'],
+    ['Rice','Pantry',''],['Peanut butter','Pantry',''],['Oats','Pantry',''],['Paper towels','Household',''],['Dish soap','Household','']
+  ].map(function(a){ return {item: a[0], section: a[1], qty: a[2], done: false}; });
+  S.sheet.bills = [
+    {name:'Electric', amount:142.18, paid:false, day:d(2).getDate()},
+    {name:'Phone plan', amount:85, paid:false, day:d(5).getDate()},
+    {name:'Car insurance', amount:164.5, paid:false, day:d(-2).getDate()},
+    {name:'Internet', amount:69.99, paid:true, day:d(-4).getDate()},
+    {name:'Rent', amount:950, paid:false, due:d(12)},
+    {name:'Streaming', amount:17.99, paid:false, day:d(9).getDate()}
+  ];
+  S.sheet.planner = [
+    {date:d(0), mins:15*60, title:'Dentist'},{date:d(0), mins:19*60, title:'League night'},
+    {date:d(1), mins:9*60+30, title:'Vendor call'},{date:d(2), mins:null, title:'Trash day'},
+    {date:d(3), mins:18*60, title:'Dinner with family'},{date:d(3), mins:20*60, title:'Vikings game'},
+    {date:d(5), mins:10*60, title:'Oil change'},{date:d(5), mins:13*60, title:'Haircut'},{date:d(5), mins:16*60, title:'Pick up order'},
+    {date:d(6), mins:null, title:'Meal prep'}
+  ];
+  S.sheet.countdowns = [
+    {label:'Trip', date:d(23), kind:'countdown', goal:0},
+    {label:'Birthday', date:d(41), kind:'countdown', goal:0},
+    {label:'Challenge', date:d(-8), kind:'streak', goal:75}
+  ];
+}
+function loadSheet(){
+  if (DEMO || !CONFIG.sheetId) { if (!S.sheet.groceries.length) demoSheet(); S.sheetOk = DEMO ? 'demo' : 'none'; renderAll(); return Promise.resolve(); }
+  var T = CONFIG.tabs;
+  return Promise.all([
+    loadTab(T.groceries), loadTab(T.bills), loadTab(T.planner), loadTab(T.countdowns), loadTab(T.settings).catch(function(){ return []; })
+  ]).then(function(r){
+    S.sheet = {groceries: parseGroceries(r[0]), bills: parseBills(r[1]), planner: parsePlanner(r[2]), countdowns: parseCountdowns(r[3]), settings: parseSettings(r[4])};
+    applySettings(); S.sheetOk = true; S.lastSync = new Date();
+    try { localStorage.setItem('hb_sheet', JSON.stringify({t: Date.now(), s: r.map(function(x){ return x; })})); } catch (e) {}
+    renderAll();
+  }).catch(function(){ S.sheetOk = false; renderAll(); });
+}
+
+/* ---------------- fetch helpers ---------------- */
+function fetchJSON(url, ms){
+  return new Promise(function(res, rej){
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var t = setTimeout(function(){ if (ctl) ctl.abort(); rej(new Error('timeout')); }, ms || 12000);
+    fetch(url, {signal: ctl ? ctl.signal : undefined, cache: 'no-store'}).then(function(r){ clearTimeout(t); if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(res).catch(function(e){ clearTimeout(t); rej(e); });
+  });
+}
+
+/* ---------------- weather ---------------- */
+function wxKind(code, isDay){
+  if (code === 0 || code === 1) return isDay === 0 ? 'moon' : 'sun';
+  if (code === 2) return 'partly';
+  if (code === 3) return 'cloud';
+  if (code === 45 || code === 48) return 'fog';
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'rain';
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow';
+  if (code >= 95) return 'storm';
+  return 'cloud';
+}
+function wxLabel(code){
+  var m = {0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Freezing fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Freezing rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Showers',81:'Showers',82:'Heavy showers',85:'Snow showers',86:'Snow showers',95:'Thunderstorm',96:'Thunderstorm, hail',99:'Thunderstorm, hail'};
+  return m[code] || 'Cloudy';
+}
+function icon(kind){
+  var sun = '<circle cx="24" cy="24" r="9" fill="#ffb300"/><g stroke="#ffb300" stroke-width="3" stroke-linecap="round"><path d="M24 4v6M24 38v6M4 24h6M38 24h6M9.9 9.9l4.2 4.2M33.9 33.9l4.2 4.2M9.9 38.1l4.2-4.2M33.9 14.1l4.2-4.2"/></g>';
+  var cloud = '<path d="M13 37h21a8 8 0 0 0 .7-16A11 11 0 0 0 12.4 23 7 7 0 0 0 13 37z" fill="#a9bbe0"/>';
+  var cloudSm = '<path d="M16 38h19a7.5 7.5 0 0 0 .6-15A10 10 0 0 0 15.6 24 6.5 6.5 0 0 0 16 38z" fill="#a9bbe0"/>';
+  var g = {
+    sun: sun,
+    moon: '<path d="M30 8a16 16 0 1 0 10 28A14 14 0 0 1 30 8z" fill="#cfe0ff"/>',
+    partly: '<circle cx="18" cy="17" r="8" fill="#ffb300"/><g stroke="#ffb300" stroke-width="3" stroke-linecap="round"><path d="M18 3v4M4 17h4M7.9 6.9l2.8 2.8M28.1 6.9l-2.8 2.8"/></g>' + cloudSm,
+    cloud: cloud,
+    fog: cloudSm.replace('M16 38', 'M16 32').replace('a7.5', 'a7.5') + '<g stroke="#a9bbe0" stroke-width="3" stroke-linecap="round"><path d="M10 38h28M14 44h22"/></g>',
+    rain: cloudSm.replace('M16 38', 'M16 31') + '<g stroke="#54d8ff" stroke-width="3.5" stroke-linecap="round"><path d="M17 36l-3 8M26 36l-3 8M35 36l-3 8"/></g>',
+    snow: cloudSm.replace('M16 38', 'M16 31') + '<g fill="#e8eefc"><circle cx="16" cy="40" r="2.6"/><circle cx="26" cy="43" r="2.6"/><circle cx="35" cy="40" r="2.6"/></g>',
+    storm: cloudSm.replace('M16 38', 'M16 31') + '<path d="M26 31l-6 9h5l-3 8 9-11h-5l3-6z" fill="#ffb300"/>'
+  };
+  return '<svg viewBox="0 0 48 48" aria-hidden="true">' + (g[kind] || cloud) + '</svg>';
+}
+function mockWeather(){
+  var t = sod(new Date()), days = [], i;
+  for (i = 0; i < 5; i++) days.push(addD(t, i));
+  function iso(d, h, m){ return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) + 'T' + h + ':' + m; }
+  return {current: {temperature_2m: 46, apparent_temperature: 41, weather_code: 2, is_day: 1, wind_speed_10m: 9},
+    daily: {time: days.map(function(d){ return iso(d, '00', '00'); }), weather_code: [2,3,61,71,0], temperature_2m_max: [52,49,45,38,50], temperature_2m_min: [31,33,34,24,28],
+      precipitation_probability_max: [5,20,70,60,0], sunrise: days.map(function(d){ return iso(d, '07', '52'); }), sunset: days.map(function(d){ return iso(d, '18', '09'); })}};
+}
+function loadWeather(){
+  var p = CONFIG.place;
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + p.lat + '&longitude=' + p.lon +
+    '&current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset' +
+    '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=' + encodeURIComponent(p.tz) + '&forecast_days=5';
+  return fetchJSON(url).then(function(j){ S.weather = j; S.wxErr = false; renderWeather(); }).catch(function(){
+    if (DEMO && !S.weather) { S.weather = mockWeather(); renderWeather(); }
+    else if (!S.weather) { S.wxErr = true; renderWeather(); }
+  });
+}
+function loadAlerts(){
+  var p = CONFIG.place;
+  if (Q.get('alert')) { S.alerts = [{event: 'Winter Weather Advisory', headline: 'Snow expected tonight above 5,000 feet. Slick roads likely through the morning commute.'}]; renderBottom(); return Promise.resolve(); }
+  return fetchJSON('https://api.weather.gov/alerts/active?point=' + p.lat + ',' + p.lon).then(function(j){
+    S.alerts = (j.features || []).map(function(f){ var pr = f.properties || {}; return {event: pr.event || 'Alert', headline: pr.headline || ''}; });
+    renderBottom();
+  }).catch(function(){});
+}
+function renderWeather(){
+  var w = S.weather, now = $('wnow'), five = $('w5');
+  if (!w || !w.current) { now.innerHTML = '<div class="txt"><b>Weather</b>' + (S.wxErr ? 'Unavailable right now' : 'Loading') + '</div>'; five.innerHTML = ''; return; }
+  var c = w.current, dly = w.daily, sun = '';
+  var nowD = new Date(), rise = new Date(dly.sunrise[0]), set = new Date(dly.sunset[0]);
+  if (nowD < rise) sun = 'Sunrise ' + fmtTime(rise); else if (nowD < set) sun = 'Sunset ' + fmtTime(set); else sun = 'Sunrise ' + fmtTime(new Date(dly.sunrise[1] || dly.sunrise[0]));
+  now.innerHTML = icon(wxKind(c.weather_code, c.is_day)) + '<div class="temp">' + Math.round(c.temperature_2m) + '°</div>' +
+    '<div class="txt"><b>' + esc(wxLabel(c.weather_code)) + '</b>Feels ' + Math.round(c.apparent_temperature) + '°<br>Wind ' + Math.round(c.wind_speed_10m) + ' mph<br>' + esc(sun) + '</div>';
+  var h = '';
+  for (var i = 0; i < 5 && i < dly.time.length; i++) {
+    var d = new Date(dly.time[i]);
+    h += '<div class="d"><div class="dn">' + (i === 0 ? 'Today' : WD[d.getDay()]) + '</div>' + icon(wxKind(dly.weather_code[i], 1)) +
+      '<div class="hl">' + Math.round(dly.temperature_2m_max[i]) + '°<i>' + Math.round(dly.temperature_2m_min[i]) + '°</i></div></div>';
+  }
+  five.innerHTML = h;
+}
+
+/* ---------------- sports ---------------- */
+function nhlNormalize(j){
+  return (j.games || []).map(function(g){
+    var st = g.gameState, state = (st === 'LIVE' || st === 'CRIT') ? 'in' : ((st === 'FINAL' || st === 'OFF') ? 'post' : 'pre');
+    var pd = g.periodDescriptor || {}, clk = g.clock || {}, status = '';
+    var pl = pd.periodType === 'OT' ? 'OT' : (pd.periodType === 'SO' ? 'SO' : ord(pd.number || 1));
+    if (state === 'in') status = clk.inIntermission ? pl + ' intermission' : pl + ' ' + (clk.timeRemaining || '');
+    else if (state === 'post') status = pd.periodType === 'OT' ? 'Final/OT' : (pd.periodType === 'SO' ? 'Final/SO' : 'Final');
+    else status = fmtGameTime(new Date(g.startTimeUTC));
+    return {league: 'nhl', id: 'nhl' + g.id, state: state, start: new Date(g.startTimeUTC), status: status,
+      away: {abbr: g.awayTeam.abbrev, score: g.awayTeam.score}, home: {abbr: g.homeTeam.abbrev, score: g.homeTeam.score}};
+  });
+}
+function nflNormalize(j){
+  var now = new Date(), out = [];
+  (j.events || []).forEach(function(e){
+    var comp = (e.competitions || [])[0] || {}, cs = comp.competitors || [];
+    var home = cs.filter(function(c){ return c.homeAway === 'home'; })[0], away = cs.filter(function(c){ return c.homeAway === 'away'; })[0];
+    if (!home || !away) return;
+    var so = e.status || comp.status || {}, t = so.type || {}, state = t.state || 'pre', start = new Date(e.date), status;
+    if (state === 'in') status = t.name === 'STATUS_HALFTIME' ? 'Halftime' : (so.period > 4 ? 'OT ' : 'Q' + so.period + ' ') + (so.displayClock || '');
+    else if (state === 'post') status = so.period > 4 ? 'Final/OT' : 'Final';
+    else status = fmtGameTime(start);
+    var hrs = (start - now) / 3600000;
+    if (state === 'post' && hrs < -36) return;
+    if (state === 'pre' && hrs > 24 * 7) return;
+    function rec(c){ return c.records && c.records[0] ? c.records[0].summary : ''; }
+    out.push({league: 'nfl', id: 'nfl' + e.id, state: state, start: start, status: status,
+      away: {abbr: away.team.abbreviation, score: away.score, rec: rec(away)}, home: {abbr: home.team.abbreviation, score: home.score, rec: rec(home)}});
+  });
+  return out;
+}
+function mockSports(){
+  var n = new Date(), a = new Date(n.getTime() + 3 * 86400000);
+  return {
+    nhl: [
+      {league:'nhl', id:'m1', state:'in', start:n, status:'2nd 04:12', away:{abbr:'VGK', score:2}, home:{abbr:'LAK', score:1}},
+      {league:'nhl', id:'m2', state:'in', start:n, status:'3rd 11:40', away:{abbr:'COL', score:3}, home:{abbr:'DAL', score:3}},
+      {league:'nhl', id:'m3', state:'post', start:n, status:'Final', away:{abbr:'NYR', score:2}, home:{abbr:'BOS', score:4}},
+      {league:'nhl', id:'m4', state:'pre', start:new Date(n.getTime() + 3600000), status:fmtGameTime(new Date(n.getTime() + 3600000)), away:{abbr:'SEA', score:''}, home:{abbr:'EDM', score:''}}
+    ],
+    nfl: [
+      {league:'nfl', id:'m5', state:'pre', start:a, status:fmtGameTime(a), away:{abbr:'GB', score:'', rec:'3-2'}, home:{abbr:'MIN', score:'', rec:'4-1'}},
+      {league:'nfl', id:'m6', state:'pre', start:a, status:fmtGameTime(a), away:{abbr:'CHI', score:'', rec:'2-3'}, home:{abbr:'DET', score:'', rec:'4-1'}}
+    ]
+  };
+}
+function loadSports(){
+  var useMock = Q.get('mock') === '1';
+  if (useMock) { var m = mockSports(); S.games = m; S.rec.nhl = {VGK: '4-2-1', LAK: '3-3-1'}; trackGames(); renderSports(); renderGN(); return Promise.resolve(); }
+  var p1 = fetchJSON('https://api-web.nhle.com/v1/score/now').then(function(j){ S.games.nhl = nhlNormalize(j); }).catch(function(){ if (DEMO && !S.games.nhl.length) S.games.nhl = mockSports().nhl; });
+  var p2 = fetchJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard').then(function(j){ S.games.nfl = nflNormalize(j); }).catch(function(){ if (DEMO && !S.games.nfl.length) S.games.nfl = mockSports().nfl; });
+  return Promise.all([p1, p2]).then(function(){ trackGames(); renderSports(); renderGN(); scheduleSports(); });
+}
+function loadNhlExtras(){
+  fetchJSON('https://api-web.nhle.com/v1/standings/now').then(function(j){
+    var o = {}; (j.standings || []).forEach(function(t){ var ab = t.teamAbbrev && t.teamAbbrev.default; if (ab) o[ab] = t.wins + '-' + t.losses + '-' + t.otLosses; });
+    S.rec.nhl = o; renderSports();
+  }).catch(function(){});
+  var fav = CONFIG.fav.nhl[0]; if (!fav) return;
+  fetchJSON('https://api-web.nhle.com/v1/club-schedule-season/' + fav + '/now', 20000).then(function(j){
+    var now = new Date(), nx = null;
+    (j.games || []).some(function(g){ var d = new Date(g.startTimeUTC); if (d > now && (g.gameState === 'FUT' || g.gameState === 'PRE')) { nx = {away: g.awayTeam.abbrev, home: g.homeTeam.abbrev, start: d}; return true; } return false; });
+    S.next.nhl = nx; renderSports();
+  }).catch(function(){});
+}
+function isFav(g){ var f = CONFIG.fav[g.league] || []; return f.indexOf(g.away.abbr) >= 0 || f.indexOf(g.home.abbr) >= 0; }
+function trackGames(){
+  var now = Date.now();
+  ['nhl', 'nfl'].forEach(function(l){ S.games[l].forEach(function(g){
+    if (g.state === 'in') S.seenLive[g.id] = true;
+    if (g.state === 'post' && S.seenLive[g.id] && !S.finalAt[g.id]) S.finalAt[g.id] = now;
+  }); });
+}
+function anyLive(){ return S.games.nhl.concat(S.games.nfl).some(function(g){ return g.state === 'in'; }); }
+var sportsTimer;
+function scheduleSports(){ clearTimeout(sportsTimer); sportsTimer = setTimeout(loadSports, anyLive() ? 30000 : 300000); }
+function sortGames(list){
+  var so = {in: 0, pre: 1, post: 2};
+  return list.slice().sort(function(a, b){ return (isFav(b) - isFav(a)) || (so[a.state] - so[b.state]) || (a.start - b.start); });
+}
+function recOf(g, side){ var t = g[side]; if (t.rec) return t.rec; if (g.league === 'nhl') return S.rec.nhl[t.abbr] || ''; return ''; }
+function gameRow(g){
+  var cls = 'game' + (isFav(g) ? ' fav' : ''), live = g.state === 'in', post = g.state === 'post', mid;
+  var as = Number(g.away.score), hs = Number(g.home.score);
+  if (g.state === 'pre') mid = '<div class="at">at</div>';
+  else mid = '<div class="sc' + (post && as < hs ? ' lo' : '') + '">' + esc(g.away.score) + '</div><div class="sc' + (post && hs < as ? ' lo' : '') + '">' + esc(g.home.score) + '</div>';
+  return '<div class="' + cls + '"><div class="tm"><div class="a">' + esc(g.away.abbr) + '</div><div class="r">' + esc(recOf(g, 'away')) + '</div></div>' + mid +
+    '<div class="tm"><div class="a">' + esc(g.home.abbr) + '</div><div class="r">' + esc(recOf(g, 'home')) + '</div></div>' +
+    '<div class="st' + (live ? ' live' : '') + '">' + esc(g.status) + '</div></div>';
+}
+function nextRow(){
+  var n = S.next.nhl, fav = CONFIG.fav.nhl[0];
+  if (!n || !fav) return '';
+  return '<div class="game fav"><div class="tm"><div class="a">' + esc(n.away) + '</div><div class="r"></div></div><div class="at">at</div><div class="tm"><div class="a">' + esc(n.home) + '</div><div class="r"></div></div><div class="st">Next: ' + esc(fmtGameTime(n.start)) + '</div></div>';
+}
+function renderSports(){
+  var zoom = S.zoom === 'sports', nhl = sortGames(S.games.nhl), nfl = sortGames(S.games.nfl);
+  var nextHtml = (!nhl.some(isFav) && CONFIG.fav.nhl.length) ? nextRow() : '';
+  var nflMsg = (CONFIG.fav.nfl.length && !nfl.some(isFav)) ? '<div class="nogame">' + esc(CONFIG.fav.nfl[0]) + ': no game this week</div>' : '';
+  var nhlEmpty = !nhl.length ? '<div class="nogame">No games today</div>' : '';
+  var nflEmpty = (!nfl.length && !nflMsg) ? '<div class="nogame">No games listed</div>' : '';
+  // row budget: 8 rows fit; headers are separate. Pick the highest-priority games across both leagues.
+  var budget = 8 - (nextHtml ? 1 : 0) - (nflMsg ? 1 : 0) - (nhlEmpty ? 1 : 0) - (nflEmpty ? 1 : 0);
+  var keep = {};
+  if (zoom) budget = 999;
+  nhl.concat(nfl).sort(function(a, b){ var so = {in: 0, pre: 1, post: 2}; return (isFav(b) - isFav(a)) || (so[a.state] - so[b.state]) || (a.start - b.start); })
+    .slice(0, budget).forEach(function(g){ keep[g.id] = true; });
+  var h = '<div class="' + (zoom ? 'sp2' : '') + '">';
+  h += '<div class="grp">NHL</div>' + nextHtml + nhlEmpty;
+  nhl.filter(function(g){ return keep[g.id]; }).forEach(function(g){ h += gameRow(g); });
+  h += '<div class="grp">NFL</div>' + nflMsg + nflEmpty;
+  nfl.filter(function(g){ return keep[g.id]; }).forEach(function(g){ h += gameRow(g); });
+  h += '</div>';
+  $('b-sports').innerHTML = h;
+  var live = S.games.nhl.concat(S.games.nfl).filter(function(g){ return g.state === 'in'; }).length;
+  $('m-sports').textContent = live ? live + ' live' : '';
+}
+
+/* ---------------- planner ---------------- */
+function renderPlanner(){
+  var zoom = S.zoom === 'planner', t = sod(new Date()), h = '<div class="pl">', total = 0;
+  for (var i = 0; i < 7; i++) {
+    var d = addD(t, i), evs = S.sheet.planner.filter(function(e){ return diffDays(e.date, d) === 0; });
+    evs.sort(function(a, b){ return (a.mins == null ? -1 : a.mins) - (b.mins == null ? -1 : b.mins); });
+    total += evs.length;
+    var max = zoom ? 99 : 4, shown = evs.slice(0, max), more = evs.length - shown.length;
+    h += '<div class="day' + (i === 0 ? ' today' : '') + '"><div class="dl"><b>' + (i === 0 ? 'Today' : WD[d.getDay()]) + '</b><span>' + (d.getMonth() + 1) + '/' + d.getDate() + '</span></div><div class="evs">';
+    if (!evs.length) h += '<span class="open">Nothing planned</span>';
+    shown.forEach(function(e){ h += '<span class="ev">' + (e.mins != null ? '<b>' + fmtMins(e.mins) + '</b>' : '') + esc(e.title) + '</span>'; });
+    if (more > 0) h += '<span class="ev" style="border-color:var(--line);color:var(--dim)">+' + more + ' more</span>';
+    h += '</div></div>';
+  }
+  $('b-planner').innerHTML = h + '</div>';
+  $('m-planner').textContent = total ? total + ' this week' : '';
+}
+
+/* ---------------- bills ---------------- */
+function billModel(){
+  var t = sod(new Date());
+  return S.sheet.bills.map(function(b){
+    var date = b.due;
+    if (!date) { var last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate(); date = new Date(t.getFullYear(), t.getMonth(), Math.min(b.day, last)); }
+    return {name: b.name, amount: b.amount, paid: b.paid, date: date, days: diffDays(date, t)};
+  }).sort(function(a, b){ return (a.paid - b.paid) || (a.days - b.days); });
+}
+function renderBills(){
+  var zoom = S.zoom === 'bills', list = billModel(), due = 0;
+  list.forEach(function(b){ if (!b.paid && b.days <= 7) due += b.amount; });
+  var shown = zoom ? list : list.slice(0, 6), h = '<div class="' + (zoom ? 'bills2' : '') + '">';
+  if (!list.length) h = '<div class="empty">No bills yet. Add them in the Bills tab of your sheet.</div>';
+  shown.forEach(function(b){
+    var lab = b.days < 0 ? (-b.days) + 'd late' : b.days === 0 ? 'Today' : b.days === 1 ? 'Tomorrow' : b.days < 7 ? WD[b.date.getDay()] : (b.date.getMonth() + 1) + '/' + b.date.getDate();
+    var cls = 'bill' + (b.paid ? ' paid' : b.days < 0 ? ' late' : b.days <= 3 ? ' soon' : '');
+    h += '<div class="' + cls + '"><span class="n">' + esc(b.name) + '</span><span class="ld"></span><span class="du">' + (b.paid ? 'Paid' : lab) + '</span><span class="am">' + money(b.amount) + '</span></div>';
+  });
+  $('b-bills').innerHTML = h + (list.length ? '</div>' : '');
+  $('m-bills').textContent = due ? money(due) + ' due this week' : (list.length ? 'All clear this week' : '');
+}
+
+/* ---------------- groceries ---------------- */
+function renderGroc(){
+  var zoom = S.zoom === 'groc', items = S.sheet.groceries.filter(function(g){ return !g.done; });
+  var left = items.length, ncols = zoom ? 4 : 2, capLines = zoom ? 12 : 8;
+  if (!items.length) { $('b-groc').innerHTML = '<div class="empty">List is empty. Add items in the Groceries tab of your sheet.</div>'; $('m-groc').textContent = ''; return; }
+  items.sort(function(a, b){ return a.section.localeCompare(b.section); });
+  // flatten into lines, then pour into columns; repeat a section header when a section continues in the next column
+  var cols = [[]], used = 0, itemsShown = 0, lastSec = null, i, g, need;
+  for (i = 0; i < items.length; i++) {
+    g = items[i];
+    var col = cols[cols.length - 1], newSec = g.section !== lastSec;
+    need = newSec ? 2 : 1;                               // a new section needs its header plus one item
+    if (col.length + need > capLines) {
+      if (cols.length >= ncols) break;
+      cols.push([]); col = cols[cols.length - 1];
+      col.push({h: g.section}); lastSec = g.section; newSec = false;
+    } else if (newSec) { col.push({h: g.section}); lastSec = g.section; }
+    col.push({g: g}); itemsShown++;
+  }
+  var h = '<div class="gcols">';
+  cols.forEach(function(c){
+    h += '<div class="gcol">';
+    c.forEach(function(r){ h += r.h ? '<div class="gh">' + esc(r.h) + '</div>' : '<div class="gi">' + esc(r.g.item) + (r.g.qty ? '<i>' + esc(r.g.qty) + '</i>' : '') + '</div>'; });
+    h += '</div>';
+  });
+  $('b-groc').innerHTML = h + '</div>';
+  $('m-groc').textContent = left > itemsShown ? '+' + (left - itemsShown) + ' more' : left + (left === 1 ? ' item' : ' items');
+}
+
+/* ---------------- bottom bar ---------------- */
+function renderBottom(){
+  var t = sod(new Date()), pills = '', n = 0;
+  S.sheet.countdowns.forEach(function(c){
+    if (n >= 4) return;
+    var d = diffDays(c.date, t);
+    if (c.kind === 'streak') {
+      var day = -d + 1; if (day < 1) return;
+      var done = c.goal && day > c.goal;
+      pills += '<div class="pill"><span class="nm">' + (done ? 'Done' : 'Day ' + day) + (c.goal ? '<small>of ' + c.goal + '</small>' : '') + '</span><span class="lb">' + esc(c.label) + '</span></div>'; n++;
+    } else if (d >= 0) {
+      pills += '<div class="pill"><span class="nm">' + (d === 0 ? 'Today' : d + '<small>' + (d === 1 ? 'day' : 'days') + '</small>') + '</span><span class="lb">' + esc(c.label) + '</span></div>'; n++;
+    }
+  });
+  $('pills').innerHTML = pills;
+  var tk = $('ticker');
+  if (S.alerts.length) {
+    var txt = S.alerts.map(function(a){ return a.event + (a.headline ? ': ' + a.headline : ''); }).join('     ///     ');
+    tk.style.display = 'flex';
+    tk.innerHTML = '<div class="at2">Weather alert</div><div class="mqbox"><div class="mq" id="mq">' + esc(txt) + '</div></div>';
+    var mq = $('mq'), box = mq.parentNode;
+    var dur = Math.max(20, (mq.offsetWidth + box.offsetWidth) / 90);
+    mq.style.animationDuration = dur + 's';
+  } else tk.style.display = 'none';
+  $('upd').textContent = (S.sheetOk === false ? 'Sheet offline. ' : '') + 'Updated ' + fmtTime(S.lastSync || new Date());
+}
+
+/* ---------------- game night ---------------- */
+function gnCandidate(){
+  var all = S.games.nhl.concat(S.games.nfl), now = Date.now(), best = null;
+  all.forEach(function(g){
+    if (S.gnDismissed[g.id]) return;
+    var ok = false, f = isFav(g);
+    if (f && g.state === 'in') ok = true;
+    else if (f && g.state === 'pre' && g.start - now < 30 * 60000 && g.start - now > -60000) ok = true;
+    else if (f && g.state === 'post' && S.finalAt[g.id] && now - S.finalAt[g.id] < 10 * 60000) ok = true;
+    else if (S.gnForce && g.state === 'in') ok = true;
+    if (ok && (!best || (f && !isFav(best)))) best = g;
+  });
+  return best;
+}
+function renderGN(){
+  var g = gnCandidate(), el = $('gn');
+  if (!g) { S.gnShown = null; el.className = ''; el.innerHTML = ''; return; }
+  S.gnShown = g.id;
+  var live = g.state === 'in', post = g.state === 'post', as = Number(g.away.score), hs = Number(g.home.score);
+  var others = S.games.nhl.concat(S.games.nfl).filter(function(o){ return o.id !== g.id && o.state === 'in'; }).map(function(o){ return o.away.abbr + ' ' + o.away.score + ', ' + o.home.abbr + ' ' + o.home.score + ' (' + o.status + ')'; }).join('      ');
+  var lg = (g.league === 'nhl' ? 'NHL' : 'NFL') + (g.state === 'pre' ? ': starting soon' : '');
+  var mid = g.state === 'pre'
+    ? '<div class="dash" style="width:220px;font-size:70px">at</div>'
+    : '<div class="s' + (post && as < hs ? ' lo' : '') + '">' + esc(g.away.score) + '</div><div class="dash">-</div><div class="s' + (post && hs < as ? ' lo' : '') + '">' + esc(g.home.score) + '</div>';
+  el.className = 'on' + (isFav(g) ? ' fav' : '');
+  el.innerHTML = '<div class="lg">' + lg + '</div><div class="hint">Press OK to close</div>' +
+    '<div class="row"><div class="t"><div class="a">' + esc(g.away.abbr) + '</div><div class="r">' + esc(recOf(g, 'away')) + '</div></div>' + mid +
+    '<div class="t"><div class="a">' + esc(g.home.abbr) + '</div><div class="r">' + esc(recOf(g, 'home')) + '</div></div></div>' +
+    '<div class="stt' + (live ? ' live' : '') + '">' + esc(g.status) + '</div>' + (others ? '<div class="oth">Also live: ' + esc(others) + '</div>' : '');
+}
+function dismissGN(){ if (S.gnShown) S.gnDismissed[S.gnShown] = true; S.gnForce = false; renderGN(); }
+
+/* ---------------- clock, layout, scale ---------------- */
+var lastMin = -1;
+function tick(){
+  var n = new Date(), m = n.getMinutes();
+  if (m !== lastMin) {
+    lastMin = m;
+    var h = n.getHours(), ap = h >= 12 ? 'PM' : 'AM'; h = h % 12; if (h === 0) h = 12;
+    $('th').textContent = h + ':' + (m < 10 ? '0' : '') + m; $('tap').textContent = ap;
+    $('date').textContent = WDF[n.getDay()] + ', ' + MO[n.getMonth()] + ' ' + n.getDate();
+    var hr = n.getHours(), night = CONFIG.nightFrom > CONFIG.nightTo ? (hr >= CONFIG.nightFrom || hr < CONFIG.nightTo) : (hr >= CONFIG.nightFrom && hr < CONFIG.nightTo);
+    document.body.className = document.body.className.replace(/\bnight\b/g, '').trim() + (night ? ' night' : '');
+    renderBottom(); renderPlanner(); renderBills();
+    renderGN();
+  }
+}
+function fit(){
+  var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080), st = $('stage');
+  st.style.transform = 'scale(' + s + ')';
+  st.style.left = ((window.innerWidth - 1920 * s) / 2) + 'px';
+  st.style.top = ((window.innerHeight - 1080 * s) / 2) + 'px';
+}
+function renderAll(){
+  renderWeather(); renderPlanner(); renderSports(); renderBills(); renderGroc(); renderBottom(); renderGN();
+  ORDER.forEach(function(k, i){
+    var el = $('p-' + k); el.classList.toggle('zoom', S.zoom === k); el.classList.toggle('focus', S.focus === i);
+  });
+  $('badge').textContent = S.sheetOk === 'demo' ? 'Sample data' : (S.sheetOk === 'none' ? 'Sample data: sheet not connected' : '');
+}
+
+/* ---------------- remote control ---------------- */
+var navTimer;
+function navShow(){ document.body.classList.add('nav'); clearTimeout(navTimer); navTimer = setTimeout(function(){ document.body.classList.remove('nav'); }, 20000); }
+function scrollZoom(dir){ var b = $('b-' + S.zoom); b.scrollTop += dir * 240; }
+document.addEventListener('keydown', function(e){
+  var k = e.keyCode; navShow();
+  if (S.gnShown) { if (k === 13 || k === 10009 || k === 404 || k === 27) { dismissGN(); e.preventDefault(); } return; }
+  if (S.zoom) {
+    if (k === 38 || k === 40) { scrollZoom(k === 40 ? 1 : -1); e.preventDefault(); }
+    else if (k === 13 || k === 10009 || k === 27) { S.zoom = null; $('b-' + ORDER[S.focus]).scrollTop = 0; renderAll(); e.preventDefault(); }
+    return;
+  }
+  if (k === 39 || k === 40) { S.focus = (S.focus + 1) % ORDER.length; renderAll(); e.preventDefault(); }
+  else if (k === 37 || k === 38) { S.focus = (S.focus + ORDER.length - 1) % ORDER.length; renderAll(); e.preventDefault(); }
+  else if (k === 13) { S.zoom = ORDER[S.focus]; renderAll(); e.preventDefault(); }
+  else if (k === 403 || k === 82) { refreshAll(); }
+  else if (k === 404 || k === 71) { S.gnForce = true; S.gnDismissed = {}; renderGN(); }
+});
+try { if (window.tizen && tizen.tvinputdevice) ['ColorF0Red', 'ColorF1Green', 'ColorF2Yellow', 'ColorF3Blue'].forEach(function(n){ try { tizen.tvinputdevice.registerKey(n); } catch (e) {} }); } catch (e) {}
+
+/* ---------------- boot ---------------- */
+function refreshAll(){ loadSheet(); loadWeather(); loadSports(); loadAlerts(); }
+window.addEventListener('resize', fit);
+fit(); tick(); renderAll();
+refreshAll(); loadNhlExtras();
+setInterval(tick, 1000);
+setInterval(loadSheet, 2 * 60000);
+setInterval(loadWeather, 15 * 60000);
+setInterval(loadAlerts, 10 * 60000);
+setInterval(loadNhlExtras, 6 * 3600000);
+})();
+</script>
+</body>
+</html>

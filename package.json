@@ -1,0 +1,11 @@
+{
+  "name": "home-board",
+  "appName": "Home Board",
+  "version": "1.0.0",
+  "description": "Weather, weekly planner, groceries, bills and NHL/NFL scores for the living room TV.",
+  "packageType": "mods",
+  "websiteURL": "https://endosys09.github.io/home-board/",
+  "main": "inject.js",
+  "keys": ["ColorF0Red", "ColorF1Green", "ColorF2Yellow", "ColorF3Blue"],
+  "license": "MIT"
+}
