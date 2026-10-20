@@ -146,6 +146,22 @@ body.nav .panel.focus{outline:4px solid var(--amber);outline-offset:-4px}
 @keyframes mq{from{transform:translateX(1000px)}to{transform:translateX(-100%)}}
 #upd{margin-left:auto;display:flex;align-items:center;padding:0 20px;font-size:24px;color:var(--dim);white-space:nowrap}
 
+/* open-a-link button + overlay */
+.lk{height:66px;display:flex;align-items:center;padding:0 26px;background:var(--panel);border:2px solid var(--line);font:800 30px/1 var(--disp);color:var(--ice);white-space:nowrap;letter-spacing:.02em}
+body.nav .lk.focus{outline:4px solid var(--amber);outline-offset:-4px}
+#lk{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:60;display:none;background:#060c1c}
+#lk.on{display:block}
+#lk .box{position:absolute;left:160px;top:150px;width:1600px}
+#lk h3{font:800 64px/1 var(--disp);color:var(--amber);margin:0 0 26px}
+#lk input{width:1480px;height:92px;box-sizing:border-box;background:#0c1630;border:3px solid var(--line);color:var(--text);font:500 44px var(--body);padding:0 24px;outline:none}
+#lk input:focus{border-color:var(--amber)}
+#lk button{height:92px;margin-left:16px;padding:0 34px;background:var(--amber);color:#1b1200;border:0;font:800 38px var(--disp);vertical-align:top}
+#lk button.r{background:#0c1630;color:var(--text);border:3px solid var(--line);height:68px;margin:12px 12px 0 0;padding:0 24px;font:600 30px var(--body)}
+#lk button:focus{outline:4px solid var(--ice)}
+#lk .err{font-size:28px;color:var(--red);margin-top:18px;min-height:36px}
+#lk .rc{margin-top:26px;font-size:26px;color:var(--dim)}
+#lk .tip{margin-top:40px;font-size:26px;color:var(--dim);line-height:1.5}
+
 /* game night */
 #gn{position:absolute;left:0;top:0;width:1840px;height:720px;z-index:40;display:none;border:2px solid var(--line);
   background:radial-gradient(900px 500px at 50% 40%,#17306b 0%,#0a1330 70%)}
@@ -181,7 +197,11 @@ body.nav .panel.focus{outline:4px solid var(--amber);outline-offset:-4px}
     <section class="panel" id="p-groc" data-key="groc"><h2 class="tab">Groceries</h2><div class="meta" id="m-groc"></div><div class="body" id="b-groc"></div></section>
     <div id="gn"></div>
   </main>
-  <footer id="bottom"><div id="pills"></div><div id="ticker"></div><div id="upd"></div></footer>
+  <footer id="bottom"><div id="pills"></div><div id="ticker"></div><div id="upd"></div><div id="p-link" class="lk">Open link</div></footer>
+  <div id="lk"><div class="box"><h3>Open a link</h3>
+    <form id="lkf" autocomplete="off"><input id="lkin" type="text" inputmode="url" placeholder="example.com or https://..." autocapitalize="off" autocorrect="off" spellcheck="false"><button type="submit">Go</button></form>
+    <div class="err" id="lkerr"></div><div class="rc" id="lkrc"></div>
+    <div class="tip">Type the address, then press Enter or select Go. Press Back to close.<br>The page opens in place of the dashboard. To return, use Back, or reopen Home Board from TizenBrew.</div></div></div>
 </div>
 
 <script>
@@ -211,7 +231,7 @@ var S = {
   zoom: null, focus: 0, lastSync: null, sheetOk: null, wxErr: false,
   seenLive: {}, finalAt: {}, gnDismissed: {}, gnForce: false, gnShown: null
 };
-var ORDER = ['planner', 'sports', 'bills', 'groc'];
+var ORDER = ['planner', 'sports', 'bills', 'groc', 'link'];
 function $(id){ return document.getElementById(id); }
 
 /* ---------------- helpers ---------------- */
@@ -701,10 +721,33 @@ function fit(){
 function renderAll(){
   renderWeather(); renderPlanner(); renderSports(); renderBills(); renderGroc(); renderBottom(); renderGN();
   ORDER.forEach(function(k, i){
-    var el = $('p-' + k); el.classList.toggle('zoom', S.zoom === k); el.classList.toggle('focus', S.focus === i);
+    var el = $('p-' + k); if (k !== 'link') el.classList.toggle('zoom', S.zoom === k); el.classList.toggle('focus', S.focus === i);
   });
   $('badge').textContent = S.sheetOk === 'demo' ? 'Sample data' : (S.sheetOk === 'none' ? 'Sample data: sheet not connected' : '');
 }
+
+/* ---------------- open a link ---------------- */
+var RC_KEY = 'homeboard.links';
+function recents(){ try { var a = JSON.parse(localStorage.getItem(RC_KEY) || '[]'); return a instanceof Array ? a.slice(0, 5) : []; } catch (e) { return []; } }
+function saveRecent(u){ try { var a = recents().filter(function(x){ return x !== u; }); a.unshift(u); localStorage.setItem(RC_KEY, JSON.stringify(a.slice(0, 5))); } catch (e) {} }
+function renderRecents(){
+  var a = recents(), el = $('lkrc');
+  el.innerHTML = a.length ? 'Recent:<br>' + a.map(function(u){ return '<button type="button" class="r" data-u="' + esc(u) + '">' + esc(u.replace(/^https?:\/\//, '')) + '</button>'; }).join('') : '';
+}
+function normUrl(v){
+  v = (v || '').trim(); if (!v) return null;
+  if (!/^[a-z][a-z0-9+.\-]*:\/\//i.test(v)) { if (/^[a-z][a-z0-9+.\-]*:/i.test(v) && !/^[a-z0-9.\-]+:\d+/i.test(v)) return null; v = 'https://' + v; }
+  return /^https?:\/\/[^\s\/]+/i.test(v) ? v : null;
+}
+function openLink(){ S.linkOpen = true; $('lk').className = 'on'; $('lkerr').textContent = ''; $('lkin').value = ''; renderRecents(); setTimeout(function(){ try { $('lkin').focus(); } catch (e) {} }, 60); }
+function closeLink(){ S.linkOpen = false; $('lk').className = ''; try { document.activeElement.blur(); } catch (e) {} }
+function goLink(v){
+  var u = normUrl(v);
+  if (!u) { $('lkerr').textContent = 'That does not look like a web address. Try something like example.com'; return; }
+  saveRecent(u); location.href = u;
+}
+$('lkf').addEventListener('submit', function(e){ e.preventDefault(); goLink($('lkin').value); });
+$('lkrc').addEventListener('click', function(e){ var u = e.target && e.target.getAttribute && e.target.getAttribute('data-u'); if (u) goLink(u); });
 
 /* ---------------- remote control ---------------- */
 var navTimer;
@@ -712,6 +755,7 @@ function navShow(){ document.body.classList.add('nav'); clearTimeout(navTimer); 
 function scrollZoom(dir){ var b = $('b-' + S.zoom); b.scrollTop += dir * 240; }
 document.addEventListener('keydown', function(e){
   var k = e.keyCode; navShow();
+  if (S.linkOpen) { if (k === 10009 || k === 27) { closeLink(); e.preventDefault(); } return; }
   if (S.gnShown) { if (k === 13 || k === 10009 || k === 404 || k === 27) { dismissGN(); e.preventDefault(); } return; }
   if (S.zoom) {
     if (k === 38 || k === 40) { scrollZoom(k === 40 ? 1 : -1); e.preventDefault(); }
@@ -720,7 +764,7 @@ document.addEventListener('keydown', function(e){
   }
   if (k === 39 || k === 40) { S.focus = (S.focus + 1) % ORDER.length; renderAll(); e.preventDefault(); }
   else if (k === 37 || k === 38) { S.focus = (S.focus + ORDER.length - 1) % ORDER.length; renderAll(); e.preventDefault(); }
-  else if (k === 13) { S.zoom = ORDER[S.focus]; renderAll(); e.preventDefault(); }
+  else if (k === 13) { if (ORDER[S.focus] === 'link') openLink(); else { S.zoom = ORDER[S.focus]; renderAll(); } e.preventDefault(); }
   else if (k === 403 || k === 82) { refreshAll(); }
   else if (k === 404 || k === 71) { S.gnForce = true; S.gnDismissed = {}; renderGN(); }
 });
